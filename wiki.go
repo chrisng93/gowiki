@@ -1,37 +1,17 @@
 package main
 
 import (
-  "io/ioutil"
   "net/http"
   "html/template"
   "regexp"
   "errors"
+  "gowiki/data"
 )
 
-// Page data structure
-type Page struct {
-  Title string
-  Body []byte
-}
-
-func (p *Page) save() error {
-  filename := p.Title + ".txt"
-  return ioutil.WriteFile(filename, p.Body, 0600)
-}
-
-func loadPage(title string) (*Page, error) {
-  filename := title + ".txt"
-  body, err := ioutil.ReadFile(filename)
-  if err != nil {
-    return nil, err
-  }
-  return &Page{Title: title, Body: body}, nil
-}
-
 // Templating
-var templates = template.Must(template.ParseFiles("edit.html", "view.html"))
+var templates = template.Must(template.ParseFiles("tmpl/edit.html", "tmpl/view.html"))
 
-func renderTemplate(w http.ResponseWriter, tmpl string, p *Page) {
+func renderTemplate(w http.ResponseWriter, tmpl string, p *data.Page) {
   err := templates.ExecuteTemplate(w, tmpl+".html", p)
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -62,7 +42,7 @@ func makeHandler(fn func (http.ResponseWriter, *http.Request, string)) http.Hand
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
-  p, err := loadPage(title)
+  p, err := data.LoadPage(title)
   if err != nil {
     http.Redirect(w, r, "/edit/"+title, http.StatusFound)
     return
@@ -71,17 +51,17 @@ func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
 }
 
 func editHandler(w http.ResponseWriter, r *http.Request, title string) {
-  p, err := loadPage(title)
+  p, err := data.LoadPage(title)
   if err != nil {
-    p = &Page{Title: title}
+    p = &data.Page{Title: title}
   }
   renderTemplate(w, "edit", p)
 }
 
 func saveHandler(w http.ResponseWriter, r *http.Request, title string) {
   body := r.FormValue("body")
-  p := &Page{Title: title, Body: []byte(body)}
-  err := p.save()
+  p := &data.Page{Title: title, Body: []byte(body)}
+  err := p.Save()
   if err != nil {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return

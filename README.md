@@ -1,5 +1,6 @@
 # Go Web Development Tutorial
 Just for fun
+Check out actual tutorial [here](https://golang.org/doc/articles/wiki/ "Go Wiki Tutorial")
 
 # Running
 
