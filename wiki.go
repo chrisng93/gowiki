@@ -5,7 +5,8 @@ import (
   "html/template"
   "regexp"
   "errors"
-  "gowiki/data"
+  
+  "github.com/chrisng93/gowiki/data"
 )
 
 // Templating
